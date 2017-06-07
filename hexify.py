@@ -8,7 +8,7 @@ START = """
 <html><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8"></head><body><font style="font-family:monospace;font-size:10;background-color:black;font-weight:bolder;">
 """
 END = """</font></body></html>"""
-SQUASH_VALUE = 15
+SQUASH_VALUE = 25
 
 
 def get_pixel_values(image):
@@ -49,9 +49,9 @@ def squash_pixels(matrix):
         new_matrix.append([])
         for j in range(col):
             new_r = new_g = new_b = 0
-            for i_r in range(i * S, i * S + S):
-                for i_c in range(j * S, j * S + S):
-                    v = matrix[i_r][i_c]
+            for inner_row in range(i * S, i * S + S):
+                for inner_col in range(j * S, j * S + S):
+                    v = matrix[inner_row][inner_col]
                     new_r += v["r"]
                     new_g += v["g"]
                     new_b += v["b"]
@@ -86,21 +86,28 @@ def main():
         print("Image not found! Aborting mission")
         exit()
 
+    print("Getting image pixel values")
     pixel_matrix = get_pixel_values(image)
+    print("Squashing pixels to reasonable size")
     pixel_matrix = squash_pixels(pixel_matrix)
+    print("Creating appropriate letters for pixels")
     populate_letters(pixel_matrix)
+    print("rotating the picture matrix")
     pixel_matrix = rotate_matrix(pixel_matrix)
 
-    print(START)
+    html_string = START
     for row in pixel_matrix:
         for pix in row:
             r, g, b = pix["r"], pix["g"], pix["b"]
-            print(
+            html_string += (
                 "<span style=\"color:rgb({},{},{});\">{}</span>".format(
                     r, g, b, pix["letter"]))
-        print("</br>")
-    print(END)
-
+        html_string += ("</br>")
+    html_string += (END)
+    filename = image_name[:image_name.index(".")]
+    with open(filename + ".html", "w") as f:
+        f.write(html_string)
+    print("HTML file created")
 
 if __name__ == '__main__':
     main()
